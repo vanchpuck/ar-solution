@@ -133,6 +133,34 @@ echo "Transacton ID is $TRX_ID"
 echo
 echo
 
+echo "POST invoke doPayment on peers of Org1 and Org2"
+echo
+TRX_ID=$(curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes/cctest \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{
+        "fcn":"doPayment",
+        "args":["002","Org1","17032019","Org1","Org2","100"]
+}')
+echo "Transacton ID is $TRX_ID"
+echo
+echo
+
+echo "POST invoke doSupply on peers of Org1 and Org2"
+echo
+TRX_ID=$(curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes/cctest \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{
+        "fcn":"doSupply",
+        "args":["001","Org2","17032019","Org2","Org1","500"]
+}')
+echo "Transacton ID is $TRX_ID"
+echo
+echo
+
 echo "GET query test chaincode on peer1 of Org1"
 echo
 curl -s -X GET \
@@ -142,7 +170,41 @@ curl -s -X GET \
 echo
 echo
 
+echo "GET query 'all docs by sender' chaincode on peer1 of Org1"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryAllBySender&args=%5B%22Org1%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
 
+echo "GET query 'all docs by recepient' chaincode on peer1 of Org1"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryAllByRecepient&args=%5B%22Org2%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'all payment docs' chaincode on peer1 of Org1"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryAllPaymentDocs&args=%5B%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'all supply docs' chaincode on peer1 of Org1"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryAllSupplyDocs&args=%5B%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
 
 # echo "POST Install chaincode on Org1"
 # echo
@@ -253,32 +315,32 @@ echo
 # echo
 # echo
 
-echo "GET query Installed chaincodes"
-echo
-curl -s -X GET \
-  "http://localhost:4000/chaincodes?peer=peer1&type=installed" \
-  -H "authorization: Bearer $ORG1_TOKEN" \
-  -H "content-type: application/json"
-echo
-echo
+# echo "GET query Installed chaincodes"
+# echo
+# curl -s -X GET \
+#   "http://localhost:4000/chaincodes?peer=peer1&type=installed" \
+#   -H "authorization: Bearer $ORG1_TOKEN" \
+#   -H "content-type: application/json"
+# echo
+# echo
 
-echo "GET query Instantiated chaincodes"
-echo
-curl -s -X GET \
-  "http://localhost:4000/chaincodes?peer=peer1&type=instantiated" \
-  -H "authorization: Bearer $ORG1_TOKEN" \
-  -H "content-type: application/json"
-echo
-echo
+# echo "GET query Instantiated chaincodes"
+# echo
+# curl -s -X GET \
+#   "http://localhost:4000/chaincodes?peer=peer1&type=instantiated" \
+#   -H "authorization: Bearer $ORG1_TOKEN" \
+#   -H "content-type: application/json"
+# echo
+# echo
 
-echo "GET query Channels"
-echo
-curl -s -X GET \
-  "http://localhost:4000/channels?peer=peer1" \
-  -H "authorization: Bearer $ORG1_TOKEN" \
-  -H "content-type: application/json"
-echo
-echo
+# echo "GET query Channels"
+# echo
+# curl -s -X GET \
+#   "http://localhost:4000/channels?peer=peer1" \
+#   -H "authorization: Bearer $ORG1_TOKEN" \
+#   -H "content-type: application/json"
+# echo
+# echo
 
 
 echo "Total execution time : $(($(date +%s)-starttime)) secs ..."
