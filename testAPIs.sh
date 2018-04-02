@@ -119,7 +119,7 @@ curl -s -X POST \
 echo
 echo
 
-echo "POST invoke test chaincode on peers of Org1 and Org2"
+echo "POST invoke doPayment on peers of Org1 and Org2"
 echo
 TRX_ID=$(curl -s -X POST \
   http://localhost:4000/channels/mychannel/chaincodes/cctest \
@@ -142,6 +142,20 @@ TRX_ID=$(curl -s -X POST \
   -d '{
         "fcn":"doPayment",
         "args":["002","Org1","17032019","Org1","Org2","100"]
+}')
+echo "Transacton ID is $TRX_ID"
+echo
+echo
+
+echo "POST invoke cancelDoc on peers of Org1 and Org2"
+echo
+TRX_ID=$(curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes/cctest \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{
+        "fcn":"cancelDoc",
+        "args":["Org1", "002"]
 }')
 echo "Transacton ID is $TRX_ID"
 echo
@@ -170,24 +184,6 @@ curl -s -X GET \
 echo
 echo
 
-echo "GET query 'all docs by sender' chaincode on peer1 of Org1"
-echo
-curl -s -X GET \
-  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryAllBySender&args=%5B%22Org1%22%5D" \
-  -H "authorization: Bearer $ORG1_TOKEN" \
-  -H "content-type: application/json"
-echo
-echo
-
-echo "GET query 'all docs by recepient' chaincode on peer1 of Org1"
-echo
-curl -s -X GET \
-  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryAllByRecepient&args=%5B%22Org2%22%5D" \
-  -H "authorization: Bearer $ORG1_TOKEN" \
-  -H "content-type: application/json"
-echo
-echo
-
 echo "GET query 'all payment docs' chaincode on peer1 of Org1"
 echo
 curl -s -X GET \
@@ -197,10 +193,100 @@ curl -s -X GET \
 echo
 echo
 
+echo "GET query 'committed payment docs' chaincode on peer1 of Org1"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryCommittedPaymentDocs&args=%5B%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'canceled payment docs' chaincode on peer1 of Org1"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryCanceledPaymentDocs&args=%5B%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
 echo "GET query 'all supply docs' chaincode on peer1 of Org1"
 echo
 curl -s -X GET \
   "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryAllSupplyDocs&args=%5B%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'committed supply docs' chaincode on peer1 of Org1"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryCommittedSupplyDocs&args=%5B%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'canceled supply docs' chaincode on peer1 of Org1"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryCanceledSupplyDocs&args=%5B%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'all docs by sender' chaincode on peer1 of Org1"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryAllSenderDocs&args=%5B%22Org1%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'commited docs by sender' chaincode on peer1 of Org1"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryCommittedSenderDocs&args=%5B%22Org2%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'canceled docs by sender' chaincode on peer1 of Org1"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryCanceledSenderDocs&args=%5B%22Org2%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'all docs by recepient' chaincode on peer1 of Org1"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryAllRecepientDocs&args=%5B%22Org2%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'commited docs by recepient' chaincode on peer1 of Org1"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryCommittedRecepientDocs&args=%5B%22Org2%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'canceled docs by recepient' chaincode on peer1 of Org1"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryCanceledRecepientDocs&args=%5B%22Org2%22%5D" \
   -H "authorization: Bearer $ORG1_TOKEN" \
   -H "content-type: application/json"
 echo

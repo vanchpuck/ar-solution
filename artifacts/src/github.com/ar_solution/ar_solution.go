@@ -20,6 +20,15 @@ type Document struct {
 	Status    string `json:"status"`
 }
 
+type QueryFilter struct {
+	Key   string
+	Value string
+}
+
+func (qf QueryFilter) String() string {
+	return fmt.Sprintf("\"%v\":\"(%v)\"", qf.Key, qf.Value)
+}
+
 var logger = shim.NewLogger("ar_solution")
 
 // SimpleChaincode example simple Chaincode implementation
@@ -45,17 +54,45 @@ func (t *Chaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	if function == "query" {
 		return t.query(stub, args)
 	}
-	if function == "queryAllBySender" {
-		return t.queryAllDocsBySender(stub, args)
+	if function == "queryAllSenderDocs" {
+		return t.queryAllSenderDocs(stub, args)
 	}
-	if function == "queryAllByRecepient" {
-		return t.queryAllDocsByRecepient(stub, args)
+	if function == "queryCommittedSenderDocs" {
+		return t.queryCommittedSenderDocs(stub, args)
+	}
+	if function == "queryCanceledSenderDocs" {
+		return t.queryCanceledSenderDocs(stub, args)
+	}
+	if function == "queryAllRecepientDocs" {
+		return t.queryAllRecepientDocs(stub, args)
+	}
+	if function == "queryCommittedRecepientDocs" {
+		return t.queryCommittedRecepientDocs(stub, args)
+	}
+	if function == "queryCanceledRecepientDocs" {
+		return t.queryCanceledRecepientDocs(stub, args)
 	}
 	if function == "queryAllPaymentDocs" {
 		return t.queryAllPaymentDocs(stub, args)
 	}
+	if function == "queryCommittedPaymentDocs" {
+		return t.queryCommittedPaymentDocs(stub, args)
+	}
+	if function == "queryCanceledPaymentDocs" {
+		return t.queryCanceledPaymentDocs(stub, args)
+	}
 	if function == "queryAllSupplyDocs" {
 		return t.queryAllSupplyDocs(stub, args)
+	}
+	if function == "queryCommittedSupplyDocs" {
+		return t.queryCommittedSupplyDocs(stub, args)
+	}
+	if function == "queryCanceledSupplyDocs" {
+		return t.queryCanceledSupplyDocs(stub, args)
+	}
+
+	if function == "cancelDoc" {
+		return t.cancelDoc(stub, args)
 	}
 
 	// const errMsg = "Unknown action, must be one of 'doPayment' but got: %v", args[0]
@@ -134,8 +171,8 @@ func (t *Chaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Re
 	// return shim.Success(Avalbytes)
 }
 
-func (t *Chaincode) queryAllDocsBySender(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) < 1 {
+func (t *Chaincode) queryAllSenderDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
 
@@ -151,9 +188,35 @@ func (t *Chaincode) queryAllDocsBySender(stub shim.ChaincodeStubInterface, args 
 	return shim.Success(queryResults)
 }
 
-func (t *Chaincode) queryAllDocsByRecepient(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) < 1 {
-		return shim.Error("Incorrect number of arguments. Expecting 1")
+func (t *Chaincode) queryCommittedSenderDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1.")
+	}
+
+	queryString := fmt.Sprintf("{\"selector\":{\"sender\":\"%s\",\"status\":\"COMMITTED\"}}", args[0])
+	queryResults, err := getQueryResultForQueryString(stub, queryString)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(queryResults)
+}
+
+func (t *Chaincode) queryCanceledSenderDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1.")
+	}
+
+	queryString := fmt.Sprintf("{\"selector\":{\"sender\":\"%s\",\"status\":\"CANCELED\"}}", args[0])
+	queryResults, err := getQueryResultForQueryString(stub, queryString)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(queryResults)
+}
+
+func (t *Chaincode) queryAllRecepientDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1.")
 	}
 
 	// sender := strings.ToLower(args[0])
@@ -168,17 +231,106 @@ func (t *Chaincode) queryAllDocsByRecepient(stub shim.ChaincodeStubInterface, ar
 	return shim.Success(queryResults)
 }
 
+func (t *Chaincode) queryCommittedRecepientDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1.")
+	}
+
+	queryString := fmt.Sprintf("{\"selector\":{\"recepient\":\"%s\",\"status\":\"COMMITTED\"}}", args[0])
+	queryResults, err := getQueryResultForQueryString(stub, queryString)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(queryResults)
+}
+
+func (t *Chaincode) queryCanceledRecepientDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1.")
+	}
+
+	queryString := fmt.Sprintf("{\"selector\":{\"recepient\":\"%s\",\"status\":\"CANCELED\"}}", args[0])
+	queryResults, err := getQueryResultForQueryString(stub, queryString)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(queryResults)
+}
+
 func (t *Chaincode) queryAllPaymentDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	return getDocsByType(stub, "PAYMENT")
+}
+
+func (t *Chaincode) queryCommittedPaymentDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return getDocsByTypeAndStatus(stub, "PAYMENT", "COMMITTED")
+}
+
+func (t *Chaincode) queryCanceledPaymentDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return getDocsByTypeAndStatus(stub, "PAYMENT", "CANCELED")
 }
 
 func (t *Chaincode) queryAllSupplyDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	return getDocsByType(stub, "SUPPLY")
 }
 
+func (t *Chaincode) queryCommittedSupplyDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return getDocsByTypeAndStatus(stub, "SUPPLY", "COMMITTED")
+}
+
+func (t *Chaincode) queryCanceledSupplyDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return getDocsByTypeAndStatus(stub, "SUPPLY", "CANCELED")
+}
+
+func (s *Chaincode) cancelDoc(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+
+	if len(args) != 2 {
+		return shim.Error("Incorrect number of arguments. Expecting 2")
+	}
+
+	var submitter string = args[0]
+	var docNumber string = args[1]
+	var key string = key(submitter, docNumber)
+
+	docBytes, _ := stub.GetState(key)
+	doc := Document{}
+
+	json.Unmarshal(docBytes, &doc)
+	doc.Status = "CANCELED"
+
+	docBytes, _ = json.Marshal(doc)
+	stub.PutState(key, docBytes)
+
+	return shim.Success(nil)
+}
+
 func getDocsByType(stub shim.ChaincodeStubInterface, docType string) pb.Response {
 	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"%s\"}}", docType)
 	queryResults, err := getQueryResultForQueryString(stub, queryString)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(queryResults)
+}
+
+func getDocsByTypeAndStatus(stub shim.ChaincodeStubInterface, docType string, status string) pb.Response {
+	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"%s\", \"status\":\"%s\"}}", docType, status)
+	queryResults, err := getQueryResultForQueryString(stub, queryString)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(queryResults)
+}
+
+func selectorQuery(stub shim.ChaincodeStubInterface, filter []QueryFilter) pb.Response {
+	var buffer bytes.Buffer
+	buffer.WriteString("{\"selector\":{")
+
+	for _, element := range filter {
+		buffer.WriteString(element.String())
+	}
+	buffer.WriteString("}}")
+
+	queryResults, err := getQueryResultForQueryString(stub, buffer.String())
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -228,6 +380,10 @@ func getQueryResultForQueryString(stub shim.ChaincodeStubInterface, queryString 
 	fmt.Printf("- getQueryResultForQueryString queryResult:\n%s\n", buffer.String())
 
 	return buffer.Bytes(), nil
+}
+
+func key(submitter string, docNumber string) string {
+	return submitter + "-" + docNumber
 }
 
 func main() {
