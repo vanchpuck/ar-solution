@@ -8,7 +8,7 @@ version: '2'
 services:
 
   ca.org1.example.com:
-    image: hyperledger/fabric-ca
+    image: hyperledger/fabric-ca:x86_64-1.0.5
     environment:
       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
       - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem
@@ -24,7 +24,7 @@ services:
     container_name: ca_peerOrg1
 
   ca.org2.example.com:
-    image: hyperledger/fabric-ca
+    image: hyperledger/fabric-ca:x86_64-1.0.5
     environment:
       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
       - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org2.example.com-cert.pem
@@ -41,7 +41,7 @@ services:
 
   orderer.example.com:
     container_name: orderer.example.com
-    image: hyperledger/fabric-orderer
+    image: hyperledger/fabric-orderer:x86_64-1.0.5
     environment:
       - ORDERER_GENERAL_LOGLEVEL=debug
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
@@ -65,10 +65,28 @@ services:
 
   peer0.org1.example.com:
     container_name: peer0.org1.example.com
-    extends:
-      file:   base.yaml
-      service: peer-base
+    # extends:
+    #   file:   base.yaml
+    #   service: peer-base
+    image: hyperledger/fabric-peer:x86_64-1.0.5
     environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      # the following setting starts chaincode containers on the same
+      # bridge network as the peers
+      # https://docs.docker.com/compose/networking/
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_default
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      # The following setting skips the gossip handshake since we are
+      # are not doing mutual TLS
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/peer/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
+
       - CORE_PEER_ID=peer0.org1.example.com
       - CORE_PEER_LOCALMSPID=Org1MSP
       - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
@@ -76,18 +94,21 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer0.org1.example.com:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
     ports:
       - 7051:7051
       - 7053:7053
     volumes:
-        - ./channel/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/:/etc/hyperledger/crypto/peer
+      - /var/run/:/host/var/run/
+      - ./channel/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/:/etc/hyperledger/crypto/peer
     depends_on:
       - orderer.example.com
       - couchdb.peer0.org1.example.com
 
   couchdb.peer0.org1.example.com:
     container_name: couchdb.peer0.org1.example.com
-    image: hyperledger/fabric-couchdb
+    image: hyperledger/fabric-couchdb:x86_64-1.0.5
     # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
     # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
     environment:
@@ -98,10 +119,28 @@ services:
 
   peer1.org1.example.com:
     container_name: peer1.org1.example.com
-    extends:
-      file:   base.yaml
-      service: peer-base
+    # extends:
+    #   file:   base.yaml
+    #   service: peer-base
+    image: hyperledger/fabric-peer:x86_64-1.0.5
     environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      # the following setting starts chaincode containers on the same
+      # bridge network as the peers
+      # https://docs.docker.com/compose/networking/
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_default
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      # The following setting skips the gossip handshake since we are
+      # are not doing mutual TLS
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/peer/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
+
       - CORE_PEER_ID=peer1.org1.example.com
       - CORE_PEER_LOCALMSPID=Org1MSP
       - CORE_PEER_ADDRESS=peer1.org1.example.com:7051
@@ -109,18 +148,21 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer1.org1.example.com:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
     ports:
       - 7056:7051
       - 7058:7053
     volumes:
-        - ./channel/crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/:/etc/hyperledger/crypto/peer
+      - /var/run/:/host/var/run/
+      - ./channel/crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/:/etc/hyperledger/crypto/peer
     depends_on:
       - orderer.example.com
       - couchdb.peer1.org1.example.com
 
   couchdb.peer1.org1.example.com:
     container_name: couchdb.peer1.org1.example.com
-    image: hyperledger/fabric-couchdb
+    image: hyperledger/fabric-couchdb:x86_64-1.0.5
     # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
     # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
     environment:
@@ -131,10 +173,28 @@ services:
 
   peer0.org2.example.com:
     container_name: peer0.org2.example.com
-    extends:
-      file:   base.yaml
-      service: peer-base
+    # extends:
+    #   file:   base.yaml
+    #   service: peer-base
+    image: hyperledger/fabric-peer:x86_64-1.0.5
     environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      # the following setting starts chaincode containers on the same
+      # bridge network as the peers
+      # https://docs.docker.com/compose/networking/
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_default
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      # The following setting skips the gossip handshake since we are
+      # are not doing mutual TLS
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/peer/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
+
       - CORE_PEER_ID=peer0.org2.example.com
       - CORE_PEER_LOCALMSPID=Org2MSP
       - CORE_PEER_ADDRESS=peer0.org2.example.com:7051
@@ -142,18 +202,21 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer0.org2.example.com:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
     ports:
       - 8051:7051
       - 8053:7053
     volumes:
-        - ./channel/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/:/etc/hyperledger/crypto/peer
+      - /var/run/:/host/var/run/
+      - ./channel/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/:/etc/hyperledger/crypto/peer
     depends_on:
       - orderer.example.com
       - couchdb.peer0.org2.example.com
 
   couchdb.peer0.org2.example.com:
     container_name: couchdb.peer0.org2.example.com
-    image: hyperledger/fabric-couchdb
+    image: hyperledger/fabric-couchdb:x86_64-1.0.5
     # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
     # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
     environment:
@@ -164,10 +227,28 @@ services:
 
   peer1.org2.example.com:
     container_name: peer1.org2.example.com
-    extends:
-      file:   base.yaml
-      service: peer-base
+    # extends:
+    #   file:   base.yaml
+    #   service: peer-base
+    image: hyperledger/fabric-peer:x86_64-1.0.5
     environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      # the following setting starts chaincode containers on the same
+      # bridge network as the peers
+      # https://docs.docker.com/compose/networking/
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_default
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      # The following setting skips the gossip handshake since we are
+      # are not doing mutual TLS
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/peer/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
+
       - CORE_PEER_ID=peer1.org2.example.com
       - CORE_PEER_LOCALMSPID=Org2MSP
       - CORE_PEER_ADDRESS=peer1.org2.example.com:7051
@@ -175,18 +256,21 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer1.org2.example.com:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
     ports:
       - 8056:7051
       - 8058:7053
     volumes:
-        - ./channel/crypto-config/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/:/etc/hyperledger/crypto/peer
+      - /var/run/:/host/var/run/
+      - ./channel/crypto-config/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/:/etc/hyperledger/crypto/peer
     depends_on:
       - orderer.example.com
       - couchdb.peer1.org2.example.com
 
   couchdb.peer1.org2.example.com:
     container_name: couchdb.peer1.org2.example.com
-    image: hyperledger/fabric-couchdb
+    image: hyperledger/fabric-couchdb:x86_64-1.0.5
     # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
     # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
     environment:
