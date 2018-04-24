@@ -2,8 +2,8 @@
 	"network-config": {
 		"orderer": {
 			"url": "grpcs://localhost:7050",
-			"server-hostname": "orderer.example.com",
-			"tls_cacerts": "../artifacts/channel/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/ca.crt"
+			"server-hostname": "orderer",
+			"tls_cacerts": "../artifacts/channel/crypto-config/ordererOrganizations/orderer/orderers/orderer/tls/ca.crt"
 		},
 		"org1": {
 			"name": "peerOrg1",
@@ -13,19 +13,19 @@
 				"peer1": {
 					"requests": "grpcs://localhost:7051",
 					"events": "grpcs://localhost:7053",
-					"server-hostname": "peer0.org1.example.com",
-					"tls_cacerts": "../artifacts/channel/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"
+					"server-hostname": "peer0-org1",
+					"tls_cacerts": "../artifacts/channel/crypto-config/peerOrganizations/Org1/peers/peer0-org1/tls/ca.crt"
 				},
 				"peer2": {
 					"requests": "grpcs://localhost:7056",
 					"events": "grpcs://localhost:7058",
-					"server-hostname": "peer1.org1.example.com",
-					"tls_cacerts": "../artifacts/channel/crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/tls/ca.crt"
+					"server-hostname": "peer1-org1",
+					"tls_cacerts": "../artifacts/channel/crypto-config/peerOrganizations/Org1/peers/peer1-org1/tls/ca.crt"
 				}	
 			},
 			"admin": {
-				"key": "../artifacts/channel/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore",
-				"cert": "../artifacts/channel/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts"
+				"key": "../artifacts/channel/crypto-config/peerOrganizations/Org1/users/Admin@Org1/msp/keystore",
+				"cert": "../artifacts/channel/crypto-config/peerOrganizations/Org1/users/Admin@Org1/msp/signcerts"
 			}
 		},
 		"org2": {
@@ -36,19 +36,19 @@
 				"peer1": {
 					"requests": "grpcs://localhost:8051",
 					"events": "grpcs://localhost:8053",
-					"server-hostname": "peer0.org2.example.com",
-					"tls_cacerts": "../artifacts/channel/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"
+					"server-hostname": "peer0-org2",
+					"tls_cacerts": "../artifacts/channel/crypto-config/peerOrganizations/Org2/peers/peer0-org2/tls/ca.crt"
 				},
 				"peer2": {
 					"requests": "grpcs://localhost:8056",
 					"events": "grpcs://localhost:8058",
-					"server-hostname": "peer1.org2.example.com",
-					"tls_cacerts": "../artifacts/channel/crypto-config/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/tls/ca.crt"
+					"server-hostname": "peer1-org2",
+					"tls_cacerts": "../artifacts/channel/crypto-config/peerOrganizations/Org2/peers/peer1-org2/tls/ca.crt"
 				}	
 			},
 			"admin": {
-				"key": "../artifacts/channel/crypto-config/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/keystore",
-				"cert": "../artifacts/channel/crypto-config/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/signcerts"
+				"key": "../artifacts/channel/crypto-config/peerOrganizations/Org2/users/Admin@Org2/msp/keystore",
+				"cert": "../artifacts/channel/crypto-config/peerOrganizations/Org2/users/Admin@Org2/msp/signcerts"
 			}
 		}
 	}

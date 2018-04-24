@@ -44,8 +44,8 @@ var queryChaincode = function(peer, channelName, chaincodeName, args, fcn, usern
 	}).then((response_payloads) => {
 		if (response_payloads) {
 			for (let i = 0; i < response_payloads.length; i++) {
-				logger.info('Key: ' + args[0] +'. Value: ' + response_payloads[i].toString('utf8'));
-				return 'Key: ' + args[0] +'. Value: ' + response_payloads[i].toString('utf8');
+				logger.info(response_payloads[i].toString('utf8'));
+				return response_payloads[i].toString('utf8');
 			}
 		} else {
 			logger.error('response_payloads is null');
