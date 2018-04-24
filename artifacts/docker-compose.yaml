@@ -3,44 +3,44 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-version: '2'
+version: '3'
 
 services:
 
-  ca.org1.example.com:
+  ca-org1:
     image: hyperledger/fabric-ca:x86_64-1.0.5
     environment:
       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
-      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem
-      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/0e729224e8b3f31784c8a93c5b8ef6f4c1c91d9e6e577c45c33163609fe40011_sk
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca-org1-cert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/3d5484e30da800d8e715f85fbc3e5ce0abce31036d8eba832d0658d5d340e160_sk
       - FABRIC_CA_SERVER_TLS_ENABLED=true
-      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem
-      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/0e729224e8b3f31784c8a93c5b8ef6f4c1c91d9e6e577c45c33163609fe40011_sk
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca-org1-cert.pem
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/3d5484e30da800d8e715f85fbc3e5ce0abce31036d8eba832d0658d5d340e160_sk
     ports:
       - "7054:7054"
     command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
     volumes:
-      - ./channel/crypto-config/peerOrganizations/org1.example.com/ca/:/etc/hyperledger/fabric-ca-server-config
-    container_name: ca_peerOrg1
+      - ./channel/crypto-config/peerOrganizations/Org1/ca/:/etc/hyperledger/fabric-ca-server-config
+    # container_name: ca-org1
 
-  ca.org2.example.com:
+  ca-org2:
     image: hyperledger/fabric-ca:x86_64-1.0.5
     environment:
       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
-      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org2.example.com-cert.pem
-      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/a7d47efa46a6ba07730c850fed2c1375df27360d7227f48cdc2f80e505678005_sk
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca-org2-cert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/5fcfd8e469b6059911ce85938f005785b0d16c9f80c7c27b54f8b1a875189539_sk
       - FABRIC_CA_SERVER_TLS_ENABLED=true
-      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org2.example.com-cert.pem
-      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/a7d47efa46a6ba07730c850fed2c1375df27360d7227f48cdc2f80e505678005_sk
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca-org2-cert.pem
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/5fcfd8e469b6059911ce85938f005785b0d16c9f80c7c27b54f8b1a875189539_sk
     ports:
       - "8054:7054"
     command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
     volumes:
-      - ./channel/crypto-config/peerOrganizations/org2.example.com/ca/:/etc/hyperledger/fabric-ca-server-config
-    container_name: ca_peerOrg2
+      - ./channel/crypto-config/peerOrganizations/Org2/ca/:/etc/hyperledger/fabric-ca-server-config
+    # container_name: ca-org2
 
-  orderer.example.com:
-    container_name: orderer.example.com
+  orderer:
+    # container_name: orderer
     image: hyperledger/fabric-orderer:x86_64-1.0.5
     environment:
       - ORDERER_GENERAL_LOGLEVEL=debug
@@ -59,12 +59,12 @@ services:
       - 7050:7050
     volumes:
         - ./channel:/etc/hyperledger/configtx
-        - ./channel/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/:/etc/hyperledger/crypto/orderer
-        - ./channel/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/:/etc/hyperledger/crypto/peerOrg1
-        - ./channel/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/:/etc/hyperledger/crypto/peerOrg2
+        - ./channel/crypto-config/ordererOrganizations/orderer/orderers/orderer/:/etc/hyperledger/crypto/orderer
+        - ./channel/crypto-config/peerOrganizations/Org1/peers/peer0-org1/:/etc/hyperledger/crypto/peerOrg1
+        - ./channel/crypto-config/peerOrganizations/Org2/peers/peer0-org2/:/etc/hyperledger/crypto/peerOrg2
 
-  peer0.org1.example.com:
-    container_name: peer0.org1.example.com
+  peer0-org1:
+    # container_name: peer0-org1
     # extends:
     #   file:   base.yaml
     #   service: peer-base
@@ -87,11 +87,11 @@ services:
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
 
-      - CORE_PEER_ID=peer0.org1.example.com
+      - CORE_PEER_ID=peer0-org1
       - CORE_PEER_LOCALMSPID=Org1MSP
-      - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
+      - CORE_PEER_ADDRESS=peer0-org1:7051
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer0.org1.example.com:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb-peer0-org1:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
@@ -101,13 +101,13 @@ services:
       - 7053:7053
     volumes:
       - /var/run/:/host/var/run/
-      - ./channel/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/:/etc/hyperledger/crypto/peer
+      - ./channel/crypto-config/peerOrganizations/Org1/peers/peer0-org1/:/etc/hyperledger/crypto/peer
     depends_on:
-      - orderer.example.com
-      - couchdb.peer0.org1.example.com
+      - orderer
+      - couchdb-peer0-org1
 
-  couchdb.peer0.org1.example.com:
-    container_name: couchdb.peer0.org1.example.com
+  couchdb-peer0-org1:
+    # container_name: couchdb-peer0-org1
     image: hyperledger/fabric-couchdb:x86_64-1.0.5
     # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
     # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
@@ -117,8 +117,8 @@ services:
     ports:
       - 5984:5984
 
-  peer1.org1.example.com:
-    container_name: peer1.org1.example.com
+  peer1-org1:
+    # container_name: peer1-org1
     # extends:
     #   file:   base.yaml
     #   service: peer-base
@@ -141,11 +141,11 @@ services:
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
 
-      - CORE_PEER_ID=peer1.org1.example.com
+      - CORE_PEER_ID=peer1-org1
       - CORE_PEER_LOCALMSPID=Org1MSP
-      - CORE_PEER_ADDRESS=peer1.org1.example.com:7051
+      - CORE_PEER_ADDRESS=peer1-org1:7051
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer1.org1.example.com:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb-peer1-org1:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
@@ -155,13 +155,13 @@ services:
       - 7058:7053
     volumes:
       - /var/run/:/host/var/run/
-      - ./channel/crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/:/etc/hyperledger/crypto/peer
+      - ./channel/crypto-config/peerOrganizations/Org1/peers/peer1-org1/:/etc/hyperledger/crypto/peer
     depends_on:
-      - orderer.example.com
-      - couchdb.peer1.org1.example.com
+      - orderer
+      - couchdb-peer1-org1
 
-  couchdb.peer1.org1.example.com:
-    container_name: couchdb.peer1.org1.example.com
+  couchdb-peer1-org1:
+    # container_name: couchdb-peer1-org1
     image: hyperledger/fabric-couchdb:x86_64-1.0.5
     # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
     # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
@@ -171,8 +171,8 @@ services:
     ports:
       - 5985:5984
 
-  peer0.org2.example.com:
-    container_name: peer0.org2.example.com
+  peer0-org2:
+    container_name: peer0-org2
     # extends:
     #   file:   base.yaml
     #   service: peer-base
@@ -195,11 +195,11 @@ services:
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
 
-      - CORE_PEER_ID=peer0.org2.example.com
+      - CORE_PEER_ID=peer0-org2
       - CORE_PEER_LOCALMSPID=Org2MSP
-      - CORE_PEER_ADDRESS=peer0.org2.example.com:7051
+      - CORE_PEER_ADDRESS=peer0-org2:7051
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer0.org2.example.com:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb-peer0-org2:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
@@ -209,13 +209,13 @@ services:
       - 8053:7053
     volumes:
       - /var/run/:/host/var/run/
-      - ./channel/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/:/etc/hyperledger/crypto/peer
+      - ./channel/crypto-config/peerOrganizations/Org2/peers/peer0-org2/:/etc/hyperledger/crypto/peer
     depends_on:
-      - orderer.example.com
-      - couchdb.peer0.org2.example.com
+      - orderer
+      - couchdb-peer0-org2
 
-  couchdb.peer0.org2.example.com:
-    container_name: couchdb.peer0.org2.example.com
+  couchdb-peer0-org2:
+    # container_name: couchdb-peer0-org2
     image: hyperledger/fabric-couchdb:x86_64-1.0.5
     # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
     # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
@@ -225,8 +225,8 @@ services:
     ports:
       - 5986:5984
 
-  peer1.org2.example.com:
-    container_name: peer1.org2.example.com
+  peer1-org2:
+    # container_name: peer1-org2
     # extends:
     #   file:   base.yaml
     #   service: peer-base
@@ -249,11 +249,11 @@ services:
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
 
-      - CORE_PEER_ID=peer1.org2.example.com
+      - CORE_PEER_ID=peer1-org2
       - CORE_PEER_LOCALMSPID=Org2MSP
-      - CORE_PEER_ADDRESS=peer1.org2.example.com:7051
+      - CORE_PEER_ADDRESS=peer1-org2:7051
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer1.org2.example.com:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb-peer1-org2:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
@@ -263,13 +263,13 @@ services:
       - 8058:7053
     volumes:
       - /var/run/:/host/var/run/
-      - ./channel/crypto-config/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/:/etc/hyperledger/crypto/peer
+      - ./channel/crypto-config/peerOrganizations/Org2/peers/peer1-org2/:/etc/hyperledger/crypto/peer
     depends_on:
-      - orderer.example.com
-      - couchdb.peer1.org2.example.com
+      - orderer
+      - couchdb-peer1-org2
 
-  couchdb.peer1.org2.example.com:
-    container_name: couchdb.peer1.org2.example.com
+  couchdb-peer1-org2:
+    # container_name: couchdb-peer1-org2
     image: hyperledger/fabric-couchdb:x86_64-1.0.5
     # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
     # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
