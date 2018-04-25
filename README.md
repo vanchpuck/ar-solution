@@ -1,294 +1,165 @@
-## Balance transfer
-
-A sample Node.js app to demonstrate **__fabric-client__** & **__fabric-ca-client__** Node.js SDK APIs
-
-### Prerequisites and setup:
-
-* [Docker](https://www.docker.com/products/overview) - v1.12 or higher
-* [Docker Compose](https://docs.docker.com/compose/overview/) - v1.8 or higher
-* [Git client](https://git-scm.com/downloads) - needed for clone commands
-* **Node.js** v6.9.0 - 6.10.0 ( __Node v7+ is not supported__ )
-* [Download Docker images](http://hyperledger-fabric.readthedocs.io/en/latest/samples.html#binaries)
-
+# AR-Solution
+Вызов функций описанный в примерах требует запуска AR-Solution на локальной машине
+На данный момент REST API для взаимодействия с сетью выглядит следующим образом:
+# Регистрация пользователя
+Выполняет регистрацию пользователя в CA. Запрос возвращает авторизационный токен, который необходим для вызова любого метода через REST API. Вызов данного метода можно использовать как при регистрации нового пользователя, так и для получения токена ранее зарегистрированного пользователя.
+### Пример вызова: 
 ```
-cd fabric-samples/balance-transfer/
-```
-
-Once you have completed the above setup, you will have provisioned a local network with the following docker container configuration:
-
-* 2 CAs
-* A SOLO orderer
-* 4 peers (2 peers per Org)
-
-#### Artifacts
-* Crypto material has been generated using the **cryptogen** tool from Hyperledger Fabric and mounted to all peers, the orderering node and CA containers. More details regarding the cryptogen tool are available [here](http://hyperledger-fabric.readthedocs.io/en/latest/build_network.html#crypto-generator).
-* An Orderer genesis block (genesis.block) and channel configuration transaction (mychannel.tx) has been pre generated using the **configtxgen** tool from Hyperledger Fabric and placed within the artifacts folder. More details regarding the configtxgen tool are available [here](http://hyperledger-fabric.readthedocs.io/en/latest/build_network.html#configuration-transaction-generator).
-
-## Running the sample program
-
-There are two options available for running the balance-transfer sample
-
-### Option 1:
-
-##### Terminal Window 1
-
-* Launch the network using docker-compose
-
-```
-docker-compose -f artifacts/docker-compose.yaml up
-```
-##### Terminal Window 2
-
-* Install the fabric-client and fabric-ca-client node modules
-
-```
-npm install
-```
-
-* Start the node app on PORT 4000
-
-```
-PORT=4000 node app
-```
-
-##### Terminal Window 3
-
-* Execute the REST APIs from the section [Sample REST APIs Requests](https://github.com/hyperledger/fabric-samples/tree/master/balance-transfer#sample-rest-apis-requests)
-
-
-### Option 2:
-
-##### Terminal Window 1
-
-```
-cd fabric-samples/balance-transfer
-
-./runApp.sh
-
-```
-
-* This lauches the required network on your local machine
-* Installs the fabric-client and fabric-ca-client node modules
-* And, starts the node app on PORT 4000
-
-##### Terminal Window 2
-
-
-In order for the following shell script to properly parse the JSON, you must install ``jq``:
-
-instructions [https://stedolan.github.io/jq/](https://stedolan.github.io/jq/)
-
-With the application started in terminal 1, next, test the APIs by executing the script - **testAPIs.sh**:
-```
-cd fabric-samples/balance-transfer
-
-./testAPIs.sh
-
-```
-
-## Sample REST APIs Requests
-
-### Login Request
-
-* Register and enroll new users in Organization - **Org1**:
-
-`curl -s -X POST http://localhost:4000/users -H "content-type: application/x-www-form-urlencoded" -d 'username=Jim&orgName=org1'`
-
-**OUTPUT:**
-
-```
-{
-  "success": true,
-  "secret": "RaxhMgevgJcm",
-  "message": "Jim enrolled Successfully",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0OTQ4NjU1OTEsInVzZXJuYW1lIjoiSmltIiwib3JnTmFtZSI6Im9yZzEiLCJpYXQiOjE0OTQ4NjE5OTF9.yWaJhFDuTvMQRaZIqg20Is5t-JJ_1BP58yrNLOKxtNI"
-}
-```
-
-The response contains the success/failure status, an **enrollment Secret** and a **JSON Web Token (JWT)** that is a required string in the Request Headers for subsequent requests.
-
-### Create Channel request
-
+curl -s -X POST \
+  http://localhost:4000/users \
+  -H "content-type: application/x-www-form-urlencoded" \
+  -d 'username=Jim&orgName=org1')
+  ```
+В результате вызова получим авторизационный токен для пользователя Jim из организации org1
+# Создание канала
+Выполняет создание канала mychannel. Имя канала в параметрах запроса должно соответствовать имени канала, указанному при создании файла транзакции создания канала.
+### Пример вызова: 
 ```
 curl -s -X POST \
   http://localhost:4000/channels \
-  -H "authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0OTQ4NjU1OTEsInVzZXJuYW1lIjoiSmltIiwib3JnTmFtZSI6Im9yZzEiLCJpYXQiOjE0OTQ4NjE5OTF9.yWaJhFDuTvMQRaZIqg20Is5t-JJ_1BP58yrNLOKxtNI" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
   -H "content-type: application/json" \
   -d '{
 	"channelName":"mychannel",
 	"channelConfigPath":"../artifacts/channel/mychannel.tx"
 }'
 ```
-
-Please note that the Header **authorization** must contain the JWT returned from the `POST /users` call
-
-### Join Channel request
-
+В качестве параметров запроса используется имя канала, а также путь к файлу транзакции создания канала. Также в заголовке запроса необходимо указать авторизационный токен, полученный при авторизации пользователя через CA.
+# Присоединение организации к каналу
+Выполняет подключение организации к каналу.
+### Пример использования
 ```
 curl -s -X POST \
   http://localhost:4000/channels/mychannel/peers \
-  -H "authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0OTQ4NjU1OTEsInVzZXJuYW1lIjoiSmltIiwib3JnTmFtZSI6Im9yZzEiLCJpYXQiOjE0OTQ4NjE5OTF9.yWaJhFDuTvMQRaZIqg20Is5t-JJ_1BP58yrNLOKxtNI" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
   -H "content-type: application/json" \
   -d '{
 	"peers": ["peer1","peer2"]
 }'
 ```
-### Install chaincode
-
+В параметрах запроса необходимо указать список пиров организаии (тут всё довольно мутно, есть некоторые вопросы), а также авторизационный токен.
+# Инсталляция чейнкода 
+Выполняет инсталляцию ченкода на пиры организации. Чейнкод должен быть установлен на пиры каждой из организаций в канале.
+### Пример использования
 ```
 curl -s -X POST \
   http://localhost:4000/chaincodes \
-  -H "authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0OTQ4NjU1OTEsInVzZXJuYW1lIjoiSmltIiwib3JnTmFtZSI6Im9yZzEiLCJpYXQiOjE0OTQ4NjE5OTF9.yWaJhFDuTvMQRaZIqg20Is5t-JJ_1BP58yrNLOKxtNI" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
   -H "content-type: application/json" \
   -d '{
-	"peers": ["peer1","peer2"],
-	"chaincodeName":"mycc",
-	"chaincodePath":"github.com/example_cc",
-	"chaincodeVersion":"v0"
+        "peers": ["peer1", "peer2"],
+        "chaincodeName":"cctest",
+        "chaincodePath":"github.com/ar_solution",
+        "chaincodeVersion":"v0"
 }'
 ```
-
-### Instantiate chaincode
-
+В параметрах запроса необходимо указать список пиров организации, имя чейнкода, путь к исходным файлам чейнкода, а также версию чейнкода. Не забываем про авторизационный токен.
+# Инициализация чейнкода
+Выполняет инициализацию чейнкода. Ченкод может быть инициализирован только одной организацией в канале, инициализация для всех организаций в канале не требудется.
+### Пример использования
 ```
 curl -s -X POST \
   http://localhost:4000/channels/mychannel/chaincodes \
-  -H "authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0OTQ4NjU1OTEsInVzZXJuYW1lIjoiSmltIiwib3JnTmFtZSI6Im9yZzEiLCJpYXQiOjE0OTQ4NjE5OTF9.yWaJhFDuTvMQRaZIqg20Is5t-JJ_1BP58yrNLOKxtNI" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
   -H "content-type: application/json" \
   -d '{
-	"chaincodeName":"mycc",
-	"chaincodeVersion":"v0",
-	"args":["a","100","b","200"]
+        "chaincodeName":"cctest",
+        "chaincodeVersion":"v0",
+        "args":[]
 }'
 ```
-
-### Invoke request
-
+В качестве параметров запроса необходимо указать имя чейнкода, а также его версию. Не забываем авторизационный токен. От того, чей авторизационный токен будет использован, зависит от чьего имени будет инициализирован чейнкод.
+# Создание записи об оплате
+Создает запись о документе оплаты в БД. 
+### Пример использования
 ```
 curl -s -X POST \
-  http://localhost:4000/channels/mychannel/chaincodes/mycc \
-  -H "authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0OTQ4NjU1OTEsInVzZXJuYW1lIjoiSmltIiwib3JnTmFtZSI6Im9yZzEiLCJpYXQiOjE0OTQ4NjE5OTF9.yWaJhFDuTvMQRaZIqg20Is5t-JJ_1BP58yrNLOKxtNI" \
+  http://localhost:4000/channels/mychannel/chaincodes/cctest \
+  -H "authorization: Bearer $ORG1_TOKEN" \
   -H "content-type: application/json" \
   -d '{
-	"fcn":"move",
-	"args":["a","b","10"]
+        "fcn":"doPayment",
+        "args":["0001","Рога и копыта","20180112","Рога и копыта","Геркулес","300"]
 }'
 ```
-**NOTE:** Ensure that you save the Transaction ID from the response in order to pass this string in the subsequent query transactions.
-
-### Chaincode Query
-
+Параметры запроса:
+- fcn - имя функции в чейнкоде
+- args - аргументы функции (номер документа, наименование организаии инициатора записи, дата документа, наименование организации отправителя платежа, наименование организации получателя платежа, сумма платежа)
+В результате вызова в БД создается запись следующего вида:
+```
+ "_id": "cctest\u0000Рога и копыта-0001",
+ "_rev": "1-7aee17713ca800be4b3ebb13d09983fb",
+ "chaincodeid": "cctest",
+ "data": {
+  "docNum": "0001",
+  "submitter": "Рога и копыта",
+  "docType": "PAYMENT",
+  "date": "20180112",
+  "sender": "Рога и копыта",
+  "recepient": "Геркулес",
+  "amount": "300",
+  "status": "COMMITTED"
+ },
+ "version": "2:0"
+```
+Статус записи при создании - COMMITTED.
+На данный момент для организаций не предусмотрено понятие первичного ключа. Этот вопрос обсудим позже.
+# Создание записи о поставке
+Создает запись о документе поставки в ДБ.
+### Пример использования
+```
+curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes/cctest \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{
+        "fcn":"doSupply",
+        "args":["001","Org2","17032019","Org2","Org1","500"]
+}'
+```
+Параметры соответствуют параметрам функции для создания документа оплаты.
+# Отмена записи (распроведение)
+Изменяет статус имеющейся записи с COMMITTED на CANCELED. 
+### Пример использования
+```
+curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes/cctest \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{
+        "fcn":"cancelDoc",
+        "args":["Org1", "002"]
+}'
+```
+В качестве параметров принимает наименование организации и номер документа для распроведения.
+# Получения списка документов оплаты
+Возвращает список документов оплаты. Есть возможность получения всех документов оплаты или документов с опрееленным статусом (COMMITTED, CANCELED). На данный момент нам больше интересно получение списка проведенных (COMMITTED) документов.
+### Пример использования
 ```
 curl -s -X GET \
-  "http://localhost:4000/channels/mychannel/chaincodes/mycc?peer=peer1&fcn=query&args=%5B%22a%22%5D" \
-  -H "authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0OTQ4NjU1OTEsInVzZXJuYW1lIjoiSmltIiwib3JnTmFtZSI6Im9yZzEiLCJpYXQiOjE0OTQ4NjE5OTF9.yWaJhFDuTvMQRaZIqg20Is5t-JJ_1BP58yrNLOKxtNI" \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryCommittedSupplyDocs&args=%5B%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
   -H "content-type: application/json"
 ```
+В параметрах GET запроса передается имя одного из пиров организаии (пока не совсем ясно, какой из пиров нужно указывать. Пока скажем, что можно указывать любой.), имя функции и список URL-Encoded аргументов функции В данном случае список аргументов пуст.
+Функция возвращает запись следующего вида:
+```
+Key: undefined. Value: [{"Key":"Org2-001", "Record":{"amount":"500","date":"17032019","docNum":"001","docType":"SUPPLY","recepient":"Org1","sender":"Org2","status":"COMMITTED","submitter":"Org2"}}]
 
-### Query Block by BlockNumber
-
+```
+На выходе имеем строку, содержащую список json-объектов. Каждый json-объектов имеет следующую структуру:
+- key - клуюч запси в БД (Ключ имеет структуру <Submitter>-<DocumentNumber>)
+- Record - json-объект, содержащий данные документа в БД.
+Все функции, возвращающие список документов, имеют сходный формат возвращаемых значений.
+# Получения списка документов поставки
+Возвращает список документов поставки. Есть возможность получения всех документов поставки или документов с опрееленным статусом (COMMITTED, CANCELED). На данный момент нам больше интересно получение списка проведенных (COMMITTED) документов.
+### Пример использования
 ```
 curl -s -X GET \
-  "http://localhost:4000/channels/mychannel/blocks/1?peer=peer1" \
-  -H "authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0OTQ4NjU1OTEsInVzZXJuYW1lIjoiSmltIiwib3JnTmFtZSI6Im9yZzEiLCJpYXQiOjE0OTQ4NjE5OTF9.yWaJhFDuTvMQRaZIqg20Is5t-JJ_1BP58yrNLOKxtNI" \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=queryCommittedSupplyDocs&args=%5B%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
   -H "content-type: application/json"
 ```
+Параметры запроса соответствуют параметрам для функции получения документов оплаты. То же - для возвращаемого результата.
 
-### Query Transaction by TransactionID
-
-```
-curl -s -X GET http://localhost:4000/channels/mychannel/transactions/TRX_ID?peer=peer1 \
-  -H "authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0OTQ4NjU1OTEsInVzZXJuYW1lIjoiSmltIiwib3JnTmFtZSI6Im9yZzEiLCJpYXQiOjE0OTQ4NjE5OTF9.yWaJhFDuTvMQRaZIqg20Is5t-JJ_1BP58yrNLOKxtNI" \
-  -H "content-type: application/json"
-```
-**NOTE**: Here the TRX_ID can be from any previous invoke transaction
-
-
-### Query ChainInfo
-
-```
-curl -s -X GET \
-  "http://localhost:4000/channels/mychannel?peer=peer1" \
-  -H "authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0OTQ4NjU1OTEsInVzZXJuYW1lIjoiSmltIiwib3JnTmFtZSI6Im9yZzEiLCJpYXQiOjE0OTQ4NjE5OTF9.yWaJhFDuTvMQRaZIqg20Is5t-JJ_1BP58yrNLOKxtNI" \
-  -H "content-type: application/json"
-```
-
-### Query Installed chaincodes
-
-```
-curl -s -X GET \
-  "http://localhost:4000/chaincodes?peer=peer1&type=installed" \
-  -H "authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0OTQ4NjU1OTEsInVzZXJuYW1lIjoiSmltIiwib3JnTmFtZSI6Im9yZzEiLCJpYXQiOjE0OTQ4NjE5OTF9.yWaJhFDuTvMQRaZIqg20Is5t-JJ_1BP58yrNLOKxtNI" \
-  -H "content-type: application/json"
-```
-
-### Query Instantiated chaincodes
-
-```
-curl -s -X GET \
-  "http://localhost:4000/chaincodes?peer=peer1&type=instantiated" \
-  -H "authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0OTQ4NjU1OTEsInVzZXJuYW1lIjoiSmltIiwib3JnTmFtZSI6Im9yZzEiLCJpYXQiOjE0OTQ4NjE5OTF9.yWaJhFDuTvMQRaZIqg20Is5t-JJ_1BP58yrNLOKxtNI" \
-  -H "content-type: application/json"
-```
-
-### Query Channels
-
-```
-curl -s -X GET \
-  "http://localhost:4000/channels?peer=peer1" \
-  -H "authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0OTQ4NjU1OTEsInVzZXJuYW1lIjoiSmltIiwib3JnTmFtZSI6Im9yZzEiLCJpYXQiOjE0OTQ4NjE5OTF9.yWaJhFDuTvMQRaZIqg20Is5t-JJ_1BP58yrNLOKxtNI" \
-  -H "content-type: application/json"
-```
-
-### Network configuration considerations
-
-You have the ability to change configuration parameters by either directly editing the network-config.json file or provide an additional file for an alternative target network. The app uses an optional environment variable "TARGET_NETWORK" to control the configuration files to use. For example, if you deployed the target network on Amazon Web Services EC2, you can add a file "network-config-aws.json", and set the "TARGET_NETWORK" environment to 'aws'. The app will pick up the settings inside the "network-config-aws.json" file.
-
-#### IP Address** and PORT information
-
-If you choose to customize your docker-compose yaml file by hardcoding IP Addresses and PORT information for your peers and orderer, then you MUST also add the identical values into the network-config.json file. The paths shown below will need to be adjusted to match your docker-compose yaml file.
-
-```
-		"orderer": {
-			"url": "grpcs://x.x.x.x:7050",
-			"server-hostname": "orderer0",
-			"tls_cacerts": "../artifacts/tls/orderer/ca-cert.pem"
-		},
-		"org1": {
-			"ca": "http://x.x.x.x:7054",
-			"peer1": {
-				"requests": "grpcs://x.x.x.x:7051",
-				"events": "grpcs://x.x.x.x:7053",
-				...
-			},
-			"peer2": {
-				"requests": "grpcs://x.x.x.x:7056",
-				"events": "grpcs://x.x.x.x:7058",
-				...
-			}
-		},
-		"org2": {
-			"ca": "http://x.x.x.x:8054",
-			"peer1": {
-				"requests": "grpcs://x.x.x.x:8051",
-				"events": "grpcs://x.x.x.x:8053",
-				...			},
-			"peer2": {
-				"requests": "grpcs://x.x.x.x:8056",
-				"events": "grpcs://x.x.x.x:8058",
-				...
-			}
-		}
-
-```
-
-#### Discover IP Address
-
-To retrieve the IP Address for one of your network entities, issue the following command:
-
-```
-# this will return the IP Address for peer0
-docker inspect peer0 | grep IPAddress
-```
-
-<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
+Более подробно с примерами вызова REST API можно ознакомиться, заглянув в исходный код скрипта testAPIs.sh
