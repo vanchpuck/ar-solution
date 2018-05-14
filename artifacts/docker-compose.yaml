@@ -172,7 +172,7 @@ services:
       - 5985:5984
 
   peer0-org2:
-    container_name: peer0-org2
+    # container_name: peer0-org2
     # extends:
     #   file:   base.yaml
     #   service: peer-base
