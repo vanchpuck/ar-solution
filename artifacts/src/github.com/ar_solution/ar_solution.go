@@ -10,20 +10,31 @@ import (
 )
 
 type Document struct {
-	DocNum    string `json:"docNum"`
-	Submitter string `json:"submitter"`
-	DocType   string `json:"docType"`
-	Date      string `json:"date"`
-	Sender    string `json:"sender"`
-	Recepient string `json:"recepient"`
-	Amount    string `json:"amount"`
-	Status    string `json:"status"`
+	DocNum       string `json:"docNum"`
+	Submitter    string `json:"submitter"`
+	DocType      string `json:"docType"`
+	Date         string `json:"date"`
+	Sender       string `json:"sender"`
+	Recepient    string `json:"recepient"`
+	AmountDebit  string `json:"amountDebit"`
+	AmountCredit string `json:"amountCredit"`
+	Description  string `json:"description"`
+	Status       string `json:"status"`
 }
 
 type QueryFilter struct {
 	Key   string
 	Value string
 }
+
+type DocumentType string
+
+const (
+	Purchase  DocumentType = "PURCHASE"
+	Sale      DocumentType = "SALE"
+	Expense   DocumentType = "EXPENSE"
+	Admission DocumentType = "ADMISSION"
+)
 
 func (qf QueryFilter) String() string {
 	return fmt.Sprintf("\"%v\":\"(%v)\"", qf.Key, qf.Value)
@@ -45,11 +56,17 @@ func (t *Chaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 
 	function, args := stub.GetFunctionAndParameters()
 
-	if function == "doPayment" {
-		return t.doPayment(stub, args)
+	if function == "newPurchaseDoc" {
+		return t.newPurchaseDoc(stub, args)
 	}
-	if function == "doSupply" {
-		return t.doSupply(stub, args)
+	if function == "newSaleDoc" {
+		return t.newSaleDoc(stub, args)
+	}
+	if function == "newExpenseDoc" {
+		return t.newExpenseDoc(stub, args)
+	}
+	if function == "newAdmissionDoc" {
+		return t.newAdmissionDoc(stub, args)
 	}
 	if function == "query" {
 		return t.query(stub, args)
@@ -72,17 +89,17 @@ func (t *Chaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	if function == "queryCanceledRecepientDocs" {
 		return t.queryCanceledRecepientDocs(stub, args)
 	}
-	if function == "queryAllPaymentDocs" {
-		return t.queryAllPaymentDocs(stub, args)
+	if function == "getAllPurchaseDocs" {
+		return t.getAllPurchaseDocs(stub, args)
 	}
-	if function == "queryCommittedPaymentDocs" {
-		return t.queryCommittedPaymentDocs(stub, args)
+	if function == "getAllExpenseDocs" {
+		return t.getAllExpenseDocs(stub, args)
 	}
-	if function == "queryCanceledPaymentDocs" {
-		return t.queryCanceledPaymentDocs(stub, args)
+	if function == "getAllSaleDocs" {
+		return t.getAllSaleDocs(stub, args)
 	}
-	if function == "queryAllSupplyDocs" {
-		return t.queryAllSupplyDocs(stub, args)
+	if function == "getAllAdmissionDocs" {
+		return t.getAllAdmissionDocs(stub, args)
 	}
 	if function == "queryCommittedSupplyDocs" {
 		return t.queryCommittedSupplyDocs(stub, args)
@@ -101,40 +118,65 @@ func (t *Chaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Error(errMsg)
 }
 
-func (s *Chaincode) doPayment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 6 {
-		return shim.Error("Incorrect number of arguments. Expecting 6")
-	}
-	return addDoc(stub, args[0], args[1], args[2], args[3], args[4], args[5], "PAYMENT")
+func (s *Chaincode) newPurchaseDoc(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return checkArgsAndCreateDoc(stub, args, Purchase)
 }
 
-func (s *Chaincode) doSupply(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 6 {
-		return shim.Error("Incorrect number of arguments. Expecting 6")
-	}
-	return addDoc(stub, args[0], args[1], args[2], args[3], args[4], args[5], "SUPPLY")
+func (s *Chaincode) newSaleDoc(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return checkArgsAndCreateDoc(stub, args, Sale)
 }
 
-// amount should be int
-func addDoc(stub shim.ChaincodeStubInterface, docNum string, submitter string, docDate string,
-	sender string, recepient string, amount string, docType string) pb.Response {
+func (s *Chaincode) newExpenseDoc(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return checkArgsAndCreateDoc(stub, args, Expense)
+}
 
-	// Check whether document already exist
+func (s *Chaincode) newAdmissionDoc(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return checkArgsAndCreateDoc(stub, args, Admission)
+}
+
+// func (s *Chaincode) doPayment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+// 	if len(args) != 6 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 8")
+// 	}
+// 	return addDoc(stub, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], "PAYMENT")
+// }
+
+// func (s *Chaincode) doSupply(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+// 	if len(args) != 6 {
+// 		return shim.Error("Incorrect number of arguments. Expecting 8")
+// 	}
+// 	return addDoc(stub, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], "SUPPLY")
+// }
+
+func checkArgsAndCreateDoc(stub shim.ChaincodeStubInterface, args []string, docType DocumentType) pb.Response {
+	if len(args) != 9 {
+		return shim.Error("Incorrect number of arguments.")
+	}
+	return newDoc(stub, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], docType)
+}
+
+// TODO amount should be int
+func newDoc(stub shim.ChaincodeStubInterface, docId string, docNum string, submitter string, docDate string,
+	sender string, recepient string, amountDebit string, amountCredit string, description string, docType DocumentType) pb.Response {
+
+	// TODO Check whether document already exist
 	var doc = Document{
-		DocNum:    docNum,
-		Submitter: submitter,
-		Date:      docDate,
-		Sender:    sender,
-		Recepient: recepient,
-		Amount:    amount,
-		DocType:   docType,
-		Status:    "COMMITTED"}
+		DocNum:       docNum,
+		Submitter:    submitter,
+		Date:         docDate,
+		Sender:       sender,
+		Recepient:    recepient,
+		AmountDebit:  amountDebit,
+		AmountCredit: amountCredit,
+		DocType:      string(docType),
+		Description:  description,
+		Status:       "COMMITTED"}
 
 	docBytes, err := json.Marshal(doc)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	stub.PutState(submitter+"-"+docNum, docBytes)
+	stub.PutState(submitter+"-"+docId, docBytes)
 
 	return shim.Success(nil)
 }
@@ -169,6 +211,22 @@ func (t *Chaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Re
 	// jsonResp := "{\"DocId\":\"" + docId + "\",\"Amount\":\"" + string(Avalbytes) + "\"}"
 	// logger.Infof("Query Response:%s\n", jsonResp)
 	// return shim.Success(Avalbytes)
+}
+
+func (t *Chaincode) getAllSaleDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return getDocsByType(stub, Sale)
+}
+
+func (t *Chaincode) getAllPurchaseDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return getDocsByType(stub, Purchase)
+}
+
+func (t *Chaincode) getAllExpenseDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return getDocsByType(stub, Expense)
+}
+
+func (t *Chaincode) getAllAdmissionDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return getDocsByType(stub, Admission)
 }
 
 func (t *Chaincode) queryAllSenderDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
@@ -257,10 +315,6 @@ func (t *Chaincode) queryCanceledRecepientDocs(stub shim.ChaincodeStubInterface,
 	return shim.Success(queryResults)
 }
 
-func (t *Chaincode) queryAllPaymentDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	return getDocsByType(stub, "PAYMENT")
-}
-
 func (t *Chaincode) queryCommittedPaymentDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	return getDocsByTypeAndStatus(stub, "PAYMENT", "COMMITTED")
 }
@@ -303,8 +357,8 @@ func (s *Chaincode) cancelDoc(stub shim.ChaincodeStubInterface, args []string) p
 	return shim.Success(nil)
 }
 
-func getDocsByType(stub shim.ChaincodeStubInterface, docType string) pb.Response {
-	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"%s\"}}", docType)
+func getDocsByType(stub shim.ChaincodeStubInterface, docType DocumentType) pb.Response {
+	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"%s\"}}", string(docType))
 	queryResults, err := getQueryResultForQueryString(stub, queryString)
 	if err != nil {
 		return shim.Error(err.Error())
