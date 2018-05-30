@@ -175,6 +175,8 @@ echo "Transacton ID is $TRX_ID"
 echo
 echo
 
+#### PURCHASE DOCS QUERIES ####
+
 echo "GET query 'all purchase docs'"
 echo
 curl -s -X GET \
@@ -183,6 +185,35 @@ curl -s -X GET \
   -H "content-type: application/json"
 echo
 echo
+
+echo "GET query 'purchase docs by sender Org1'"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=getPurchaseDocsBySender&args=%5B%22Org1%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'purchase docs by recepient Org2'"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=getPurchaseDocsByRecepient&args=%5B%22Org2%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'purchase docs by submitter Org1'"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=getPurchaseDocsBySubmitter&args=%5B%22Org1%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+#### EXPENSE DOCS QUERIES ####
 
 echo "GET query 'all expense docs'"
 echo
@@ -193,6 +224,35 @@ curl -s -X GET \
 echo
 echo
 
+echo "GET query 'expense docs by sender Org1'"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=getExpenseDocsBySender&args=%5B%22Org1%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'expense docs by recepient Org2'"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=getExpenseDocsByRecepient&args=%5B%22Org2%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'expense docs by submitter Org1'"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=getExpenseDocsBySubmitter&args=%5B%22Org1%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+#### SALE DOCS QUERIES ####
+
 echo "GET query 'all sale docs'"
 echo
 curl -s -X GET \
@@ -202,6 +262,35 @@ curl -s -X GET \
 echo
 echo
 
+echo "GET query 'sale docs by sender Org1'"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=getSaleDocsBySender&args=%5B%22Org1%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'sale docs by recepient Org2'"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=getSaleDocsByRecepient&args=%5B%22Org2%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'sale docs by submitter Org1'"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=getSaleDocsBySubmitter&args=%5B%22Org1%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+#### ADMISSION DOCS QUERIES ####
+
 echo "GET query 'all admission docs'"
 echo
 curl -s -X GET \
@@ -210,5 +299,34 @@ curl -s -X GET \
   -H "content-type: application/json"
 echo
 echo
+
+echo "GET query 'admission docs by sender Org1'"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=getAdmissionDocsBySender&args=%5B%22Org1%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'admission docs by recepient Org2'"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=getAdmissionDocsByRecepient&args=%5B%22Org2%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+echo "GET query 'admission docs by submitter Org1'"
+echo
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/cctest?peer=peer1&fcn=getAdmissionDocsBySubmitter&args=%5B%22Org1%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+echo
+echo
+
+
 
 echo "Total execution time : $(($(date +%s)-starttime)) secs ..."
