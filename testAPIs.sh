@@ -127,7 +127,7 @@ TRX_ID=$(curl -s -X POST \
   -H "content-type: application/json" \
   -d '{
         "fcn":"newSaleDoc",
-        "args":["fd5c0e62-53bf-11e8-a305-8e9b35eee675","0000-000001","Org1","2018-04-02T00:00:00","Org1","Org2","35000","0","Продажа (0000-000001 от 01.05.2018)"]
+        "args":["fd5c0e62-53bf-11e8-a305-8e9b35eee675","0000-000001","Org1","2018-04-02T00:00:00","Org1","Org2","35000","0","Продажа (0000-000001 от 01.05.2018)","0000-000101"]
 }')
 echo "Transacton ID is $TRX_ID"
 echo
@@ -141,7 +141,7 @@ TRX_ID=$(curl -s -X POST \
   -H "content-type: application/json" \
   -d '{
         "fcn":"newPurchaseDoc",
-        "args":["d2755510-529e-11e8-a305-8e9b35eee675","0000-000002","Org1","2018-04-02T00:00:00","Org1","Org2","0","63900","Приход (0000-000537 от 02.04.2018)"]
+        "args":["d2755510-529e-11e8-a305-8e9b35eee675","0000-000002","Org1","2018-04-02T00:00:00","Org1","Org2","0","63900","Приход (0000-000537 от 02.04.2018)","0000-000101"]
 }')
 echo "Transacton ID is $TRX_ID"
 echo
@@ -155,7 +155,7 @@ TRX_ID=$(curl -s -X POST \
   -H "content-type: application/json" \
   -d '{
         "fcn":"newExpenseDoc",
-        "args":["b55a0e3e-541c-11e8-a305-8e9b35eee675","0000-000003","Org1","2018-04-02T00:00:00","Org1","Org2","63900","0","Оплата (0000-000001 от 02.04.2018)"]
+        "args":["b55a0e3e-541c-11e8-a305-8e9b35eee675","0000-000003","Org1","2018-04-02T00:00:00","Org1","Org2","63900","0","Оплата (0000-000001 от 02.04.2018)","0000-000101"]
 }')
 echo "Transacton ID is $TRX_ID"
 echo
@@ -169,7 +169,7 @@ TRX_ID=$(curl -s -X POST \
   -H "content-type: application/json" \
   -d '{
         "fcn":"newAdmissionDoc",
-        "args":["fd5c0e69-53bf-11e8-a305-8e9b35eee675","0000-000004","Org1","2018-04-02T00:00:00","Org1","Org2","0","35000","Оплата (0000-000001 от 09.05.2018)"]
+        "args":["fd5c0e69-53bf-11e8-a305-8e9b35eee675","0000-000004","Org1","2018-04-02T00:00:00","Org1","Org2","0","35000","Оплата (0000-000001 от 09.05.2018)","0000-000101"]
 }')
 echo "Transacton ID is $TRX_ID"
 echo

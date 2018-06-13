@@ -12,6 +12,7 @@ import (
 
 type Document struct {
 	DocNum       string `json:"docNum"`
+	InDocNum     string `json:"inDocNum"`
 	Submitter    string `json:"submitter"`
 	DocType      string `json:"docType"`
 	Date         string `json:"date"`
@@ -240,19 +241,20 @@ func (s *Chaincode) newAdmissionDoc(stub shim.ChaincodeStubInterface, args []str
 // }
 
 func checkArgsAndCreateDoc(stub shim.ChaincodeStubInterface, args []string, docType DocumentType) pb.Response {
-	if len(args) != 9 {
+	if len(args) != 10 {
 		return shim.Error("Incorrect number of arguments.")
 	}
-	return newDoc(stub, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], docType)
+	return newDoc(stub, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], docType)
 }
 
 // TODO amount should be int
 func newDoc(stub shim.ChaincodeStubInterface, docId string, docNum string, submitter string, docDate string,
-	sender string, recepient string, amountDebit string, amountCredit string, description string, docType DocumentType) pb.Response {
+	sender string, recepient string, amountDebit string, amountCredit string, description string, inDocNum string, docType DocumentType) pb.Response {
 
 	// TODO Check whether document already exist
 	var doc = Document{
 		DocNum:       docNum,
+		InDocNum:     inDocNum,
 		Submitter:    submitter,
 		Date:         docDate,
 		Sender:       sender,
