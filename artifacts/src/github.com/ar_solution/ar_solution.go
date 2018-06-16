@@ -16,6 +16,7 @@ type Document struct {
 	Submitter    string `json:"submitter"`
 	DocType      string `json:"docType"`
 	Date         string `json:"date"`
+	InDocDate    string `json:"inDocDate"`
 	Sender       string `json:"sender"`
 	Recepient    string `json:"recepient"`
 	AmountDebit  string `json:"amountDebit"`
@@ -111,10 +112,12 @@ func (s *selector) SelectorStr() string {
 type DocumentType string
 
 const (
-	Purchase  DocumentType = "PURCHASE"
-	Sale      DocumentType = "SALE"
-	Expense   DocumentType = "EXPENSE"
-	Admission DocumentType = "ADMISSION"
+	Purchase         DocumentType = "PURCHASE"
+	Sale             DocumentType = "SALE"
+	Expense          DocumentType = "EXPENSE"
+	Admission        DocumentType = "ADMISSION"
+	AdmissionCorrect DocumentType = "ADMISSION_CORRECT"
+	SaleCorrect      DocumentType = "SALE_CORRECT"
 )
 
 // func (qf QueryFilter) String() string {
@@ -148,6 +151,12 @@ func (t *Chaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	}
 	if function == "newAdmissionDoc" {
 		return t.newAdmissionDoc(stub, args)
+	}
+	if function == "newAdmissionCorrectDoc" {
+		return t.newAdmissionCorrectDoc(stub, args)
+	}
+	if function == "newSaleCorrectDoc" {
+		return t.newSaleCorrectDoc(stub, args)
 	}
 	if function == "query" {
 		return t.query(stub, args)
@@ -200,6 +209,30 @@ func (t *Chaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	if function == "getAdmissionDocsBySubmitter" {
 		return t.getAdmissionDocsBySubmitter(stub, args)
 	}
+	if function == "getAllAdmissionCorrectDocs" {
+		return t.getAllAdmissionCorrectDocs(stub, args)
+	}
+	if function == "getAdmissionCorrectDocsBySender" {
+		return t.getAdmissionCorrectDocsBySender(stub, args)
+	}
+	if function == "getAdmissionCorrectDocsByRecepient" {
+		return t.getAdmissionCorrectDocsByRecepient(stub, args)
+	}
+	if function == "getAdmissionCorrectDocsBySubmitter" {
+		return t.getAdmissionCorrectDocsBySubmitter(stub, args)
+	}
+	if function == "getAllSaleCorrectDocs" {
+		return t.getAllSaleCorrectDocs(stub, args)
+	}
+	if function == "getSaleCorrectDocsBySender" {
+		return t.getSaleCorrectDocsBySender(stub, args)
+	}
+	if function == "getSaleCorrectDocsByRecepient" {
+		return t.getSaleCorrectDocsByRecepient(stub, args)
+	}
+	if function == "getSaleCorrectDocsBySubmitter" {
+		return t.getSaleCorrectDocsBySubmitter(stub, args)
+	}
 	if function == "cancelDoc" {
 		return t.cancelDoc(stub, args)
 	}
@@ -226,6 +259,14 @@ func (s *Chaincode) newAdmissionDoc(stub shim.ChaincodeStubInterface, args []str
 	return checkArgsAndCreateDoc(stub, args, Admission)
 }
 
+func (s *Chaincode) newAdmissionCorrectDoc(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return checkArgsAndCreateDoc(stub, args, AdmissionCorrect)
+}
+
+func (s *Chaincode) newSaleCorrectDoc(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return checkArgsAndCreateDoc(stub, args, SaleCorrect)
+}
+
 // func (s *Chaincode) doPayment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 // 	if len(args) != 6 {
 // 		return shim.Error("Incorrect number of arguments. Expecting 8")
@@ -241,20 +282,21 @@ func (s *Chaincode) newAdmissionDoc(stub shim.ChaincodeStubInterface, args []str
 // }
 
 func checkArgsAndCreateDoc(stub shim.ChaincodeStubInterface, args []string, docType DocumentType) pb.Response {
-	if len(args) != 10 {
+	if len(args) != 11 {
 		return shim.Error("Incorrect number of arguments.")
 	}
-	return newDoc(stub, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], docType)
+	return newDoc(stub, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], docType)
 }
 
 // TODO amount should be int
 func newDoc(stub shim.ChaincodeStubInterface, docId string, docNum string, submitter string, docDate string,
-	sender string, recepient string, amountDebit string, amountCredit string, description string, inDocNum string, docType DocumentType) pb.Response {
+	sender string, recepient string, amountDebit string, amountCredit string, description string, inDocNum string, inDocDate string, docType DocumentType) pb.Response {
 
 	// TODO Check whether document already exist
 	var doc = Document{
 		DocNum:       docNum,
 		InDocNum:     inDocNum,
+		InDocDate:    inDocDate,
 		Submitter:    submitter,
 		Date:         docDate,
 		Sender:       sender,
@@ -416,6 +458,62 @@ func (cc *Chaincode) getAdmissionDocsBySubmitter(stub shim.ChaincodeStubInterfac
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
 	return cc.getDocs(stub, Admission, args[0], "", "")
+}
+
+func (cc *Chaincode) getAllAdmissionCorrectDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 0 {
+		return shim.Error("Incorrect number of arguments. Expecting 0")
+	}
+	return cc.getDocs(stub, AdmissionCorrect, "", "", "")
+}
+
+func (cc *Chaincode) getAdmissionCorrectDocsBySender(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+	return cc.getDocs(stub, AdmissionCorrect, "", args[0], "")
+}
+
+func (cc *Chaincode) getAdmissionCorrectDocsByRecepient(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+	return cc.getDocs(stub, AdmissionCorrect, "", "", args[0])
+}
+
+func (cc *Chaincode) getAdmissionCorrectDocsBySubmitter(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+	return cc.getDocs(stub, AdmissionCorrect, args[0], "", "")
+}
+
+func (cc *Chaincode) getAllSaleCorrectDocs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 0 {
+		return shim.Error("Incorrect number of arguments. Expecting 0")
+	}
+	return cc.getDocs(stub, SaleCorrect, "", "", "")
+}
+
+func (cc *Chaincode) getSaleCorrectDocsBySender(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+	return cc.getDocs(stub, SaleCorrect, "", args[0], "")
+}
+
+func (cc *Chaincode) getSaleCorrectDocsByRecepient(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+	return cc.getDocs(stub, SaleCorrect, "", "", args[0])
+}
+
+func (cc *Chaincode) getSaleCorrectDocsBySubmitter(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+	return cc.getDocs(stub, SaleCorrect, args[0], "", "")
 }
 
 func (t *Chaincode) getDocs(stub shim.ChaincodeStubInterface, docType DocumentType, submitter string, sender string, recepient string) pb.Response {
